@@ -16,6 +16,8 @@
  */
 package org.jivesoftware.smack.proxy;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -84,6 +86,8 @@ public class Socks5ProxySocketFactory
         
         try
         {
+            Log.d("yuan_socket","socket start.");
+
             socket=new Socket(proxy_host, proxy_port);    
             in=socket.getInputStream();
             out=socket.getOutputStream();
@@ -296,10 +300,16 @@ public class Socks5ProxySocketFactory
       //in.read(buf, 0, 4);
             fill(in, buf, 4);
 
+            Log.d("yuan_socket", "buf array:" + buf.toString());
+
             if(buf[1]!=0)
             {
+                Log.d("yuan_socket","buf state:"+buf[1]);
+
                 try
                 {
+                    Log.d("yuan_socket","socket closed 1.");
+
                     socket.close();
                 }
                 catch(Exception eee)
@@ -340,6 +350,8 @@ public class Socks5ProxySocketFactory
             {
                 if(socket!=null)
                 {
+                    Log.d("yuan_socket","socket closed. 2");
+
                     socket.close(); 
                 }
             }

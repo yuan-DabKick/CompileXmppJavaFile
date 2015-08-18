@@ -16,6 +16,8 @@
  */
 package org.jivesoftware.smack.proxy;
 
+import android.util.Log;
+
 import javax.net.SocketFactory;
 
 /**
@@ -106,6 +108,9 @@ public class ProxyInfo
     
     public SocketFactory getSocketFactory()
     {
+        Log.d("yuan_socket", "getSocketFactory()");
+        Log.d("yuan_socket", "proxyType:"+proxyType);
+
         if(proxyType == ProxyType.NONE)
         {
             return new DirectSocketFactory();

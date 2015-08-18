@@ -16,6 +16,8 @@
  */
 package org.jivesoftware.smack.proxy;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -72,6 +74,9 @@ public class Socks4ProxySocketFactory
     private Socket socks4ProxifiedSocket(String host, int port) 
         throws IOException
     {
+
+        Log.d("yuan_socket", "socks4ProxifiedSocket()");
+
         Socket socket = null;
         InputStream in = null;
         OutputStream out = null;

@@ -6,6 +6,14 @@ mkdir temp
 
 cp -r core-class/* temp
 
+cp app/build/intermediates/classes/debug/org/jivesoftware/smack/proxy/* temp/org/jivesoftware/smack/proxy/
+
+cp app/build/intermediates/classes/debug/org/jivesoftware/smack/ConnectionConfiguration*.class temp/org/jivesoftware/smack/
+
+cp -r app/build/intermediates/classes/debug/org/jivesoftware/smack/sm temp/org/jivesoftware/smack/
+
+cp -r app/build/intermediates/classes/debug/org/jivesoftware/smack/tcp temp/org/jivesoftware/smack/
+
 cp app/build/intermediates/classes/debug/org/jivesoftware/smack/Packet/Stanza.class temp/org/jivesoftware/smack/packet/
 
 cp app/build/intermediates/classes/debug/org/jivesoftware/smack/Packet/Message*.class temp/org/jivesoftware/smack/packet/

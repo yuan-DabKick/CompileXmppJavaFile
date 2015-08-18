@@ -16,6 +16,8 @@
  */
 package org.jivesoftware.smack.proxy;
 
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,6 +80,8 @@ class HTTPProxySocketFactory
     private Socket httpProxifiedSocket(String host, int port)
         throws IOException 
     {
+        Log.d("yuan_socket", "httpProxifiedSocket()");
+
         String proxyhost = proxy.getProxyAddress();
         int proxyPort = proxy.getProxyPort();
         @SuppressWarnings("resource")

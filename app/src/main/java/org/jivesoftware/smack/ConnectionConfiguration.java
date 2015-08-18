@@ -17,6 +17,8 @@
 
 package org.jivesoftware.smack;
 
+import android.util.Log;
+
 import org.jivesoftware.smack.packet.Session;
 import org.jivesoftware.smack.proxy.ProxyInfo;
 
@@ -112,9 +114,15 @@ public abstract class ConnectionConfiguration {
             if (builder.socketFactory != null) {
                 throw new IllegalArgumentException("Can not use proxy together with custom socket factory");
             }
+
+            Log.d("yuan_socket","connectionConfiguration:proxy is not null");
+
             socketFactory = proxy.getSocketFactory();
         } else {
             socketFactory = builder.socketFactory;
+
+            Log.d("yuan_socket","connectionConfiguration:proxy is null");
+
         }
 
         securityMode = builder.securityMode;
