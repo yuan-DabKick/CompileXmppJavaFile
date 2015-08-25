@@ -32,4 +32,6 @@ cd ..
 
 rm -rf temp
 
+cp smack-core-4.1.1.jar ../DabKick/app/libs/Xmpp/
+
 echo "Done"

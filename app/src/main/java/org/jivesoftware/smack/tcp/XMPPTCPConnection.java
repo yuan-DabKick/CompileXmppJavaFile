@@ -121,6 +121,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -931,6 +933,9 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
         // possible. The 'to' attribute is *always* available. The 'from' attribute if set by the user and no external
         // mechanism is used to determine the local entity (user). And the 'id' attribute is available after the first
         // response from the server (see e.g. RFC 6120 § 9.1.1 Step 2.)
+
+        Log.d("yuan_socket","open stream.");
+
         CharSequence to = getServiceName();
         CharSequence from = null;
         CharSequence localpart = config.getUsername();
@@ -961,6 +966,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
 
             Async.go(new Runnable() {
                 public void run() {
+                    Log.d("yuan_socket","PacketReader init.");
                     parsePackets();
                 }
             }, "Smack Packet Reader (" + getConnectionCounter() + ")");
@@ -981,21 +987,40 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
          */
         private void parsePackets() {
             try {
+                Log.d("yuan_socket", "parse packet.");
+
                 initalOpenStreamSend.checkIfSuccessOrWait();
+
+                Log.d("yuan_socket", "parse packet.1");
+
                 int eventType = parser.getEventType();
                 while (!done) {
+
+                    Log.d("yuan_socket", "parse packet. reading...");
+
                     switch (eventType) {
+
                         case XmlPullParser.START_TAG:
+                            Log.d("yuan_socket", "parse packet. start tag.");
+
                             final String name = parser.getName();
+                            Log.d("yuan_socket", "parse packet. name:"+parser.getName());
+
                             switch (name) {
                                 case Message.ELEMENT:
                                 case IQ.IQ_ELEMENT:
                                 case Presence.ELEMENT:
                                     try {
+                                        Log.d("yuan_socket", "parse packet. presence element.");
+
                                         parseAndProcessStanza(parser);
                                     } finally {
                                         clientHandledStanzasCount = SMUtils.incrementHeight(clientHandledStanzasCount);
+                                        Log.d("yuan_socket", "parse packet. presence element finally.");
+
                                     }
+                                    Log.d("yuan_socket", "parse packet. presence element end.");
+
                                     break;
                                 case "stream":
                                     // We found an opening stream.
@@ -1006,8 +1031,11 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                                     }
                                     break;
                                 case "error":
+                                    Log.d("yuan_socket", "parse packet. error");
+
                                     throw new StreamErrorException(PacketParserUtils.parseStreamError(parser));
                                 case "features":
+
                                     parseFeatures(parser);
                                     break;
                                 case "proceed":
@@ -1024,6 +1052,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                                     }
                                     break;
                                 case "failure":
+                                    Log.d("yuan_socket", "parse packet.failure.");
+
                                     String namespace = parser.getNamespace(null);
                                     switch (namespace) {
                                         case "urn:ietf:params:xml:ns:xmpp-tls":
@@ -1093,6 +1123,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                                     LOGGER.fine("Stream Management (XEP-198): succesfully enabled");
                                     break;
                                 case Failed.ELEMENT:
+                                    Log.d("yuan_socket", "parse packet. fail element.");
+
                                     Failed failed = ParseStreamManagement.failed(parser);
                                     XMPPError xmppError = new XMPPError(failed.getXMPPErrorCondition());
                                     XMPPException xmppException = new XMPPErrorException("Stream Management failed", xmppError);
@@ -1148,27 +1180,48 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                             }
                             break;
                         case XmlPullParser.END_TAG:
+                            Log.d("yuan_socket", "parse packet.END_TAG");
+
                             if (parser.getName().equals("stream")) {
                                 // Disconnect the connection
+
                                 disconnect();
                             }
                             break;
                         case XmlPullParser.END_DOCUMENT:
                             // END_DOCUMENT only happens in an error case, as otherwise we would see a
                             // closing stream element before.
+                            Log.d("yuan_socket", "parse packet.END_DOCUMENT");
+
                             throw new SmackException(
                                     "Parser got END_DOCUMENT event. This could happen e.g. if the server closed the connection without sending a closing stream element");
                     }
                     eventType = parser.next();
                 }
             } catch (Exception e) {
+                Log.d("yuan_socket", "call notifyConnectionError:parsePackets");
+
+//                Timer timer = new Timer();
+//                timer.schedule(new TimerTask() {
+//                    @Override
+//                    public void run() {
+//                        try {
+//                            openStream();
+//                        } catch (SmackException e1) {
+//                            Log.d("yuan_socket", "call notifyConnectionError:open stream fail."+e1.toString());
+//
+//                            e1.printStackTrace();
+//                        }
+//                    }
+//                },15000);
+
                 // The exception can be ignored if the the connection is 'done'
                 // or if the it was caused because the socket got closed
                 if (!(done || isSocketClosed())) {
                     // Close the connection and notify connection listeners of the
                     // error.
-                    Log.d("yuan_socket", "call notifyConnectionError:parsePackets");
 
+                    //Yuan modified
                     notifyConnectionError(e);
                 }
             }
@@ -1308,6 +1361,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
 
         private void writePackets() {
             try {
+                Log.d("yuan_socket","write packets");
                 openStream();
                 initalOpenStreamSend.reportSuccess();
                 // Write out packets from the queue.
@@ -1399,6 +1453,8 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                         writer.flush();
                     } catch (Exception e) {
                         LOGGER.log(Level.WARNING, "Exception writing closing stream element", e);
+                        Log.d("yuan_socket", "write packets exception:"+e.toString());
+
                     }
                     // Delete the queue contents (hopefully nothing is left).
                     queue.clear();
@@ -1410,8 +1466,12 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
 
                 try {
                     writer.close();
+                    Log.d("yuan_socket", "writer close");
+
                 } catch (Exception e) {
                     // Do nothing
+                    Log.d("yuan_socket", "writer close exception:"+e.toString());
+
                 }
 
             } catch (Exception e) {
@@ -1420,6 +1480,7 @@ public class XMPPTCPConnection extends AbstractXMPPConnection {
                 if (!(done() || isSocketClosed())) {
                     Log.d("yuan_socket", "call notifyConnectionError:write packet.");
 
+                    //yuan modified
                     notifyConnectionError(e);
                 } else {
                     LOGGER.log(Level.FINE, "Ignoring Exception in writePackets()", e);
